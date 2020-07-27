@@ -11,6 +11,7 @@ const ImageminPlugin = require('imagemin-webpack-plugin').default;
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
+// const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 const {
@@ -113,6 +114,11 @@ module.exports = (browserArg) => {
 					},
 				},
 				{
+					test: /\.tsx?$/,
+					use: 'ts-loader',
+					exclude: /node_modules/,
+				},
+				{
 					test: /\.svg$/,
 					loader: 'svg-sprite-loader',
 				},
@@ -135,7 +141,9 @@ module.exports = (browserArg) => {
 			alias: {
 				'@': resolve(srcDir),
 			},
+			extensions: ['.js', '.ts'],
 			modules: ['node_modules'],
+			// plugins: [new TsconfigPathsPlugin()],
 		},
 		stats: 'minimal',
 	};
@@ -167,7 +175,7 @@ function getDevtool() {
 		return 'inline-source-map';
 	}
 
-	return 'eval-cheap-source-map';
+	return 'eval-cheap-module-source-map';
 }
 
 /**
@@ -178,10 +186,13 @@ function getDevtool() {
  *
  * @return {String} Path to entry
  */
-function getEntryJsPath(entryName) {
-	const jsPath = resolve(srcDir, `${entryName}.js`);
-	if (fs.existsSync(jsPath)) {
-		return jsPath;
+function getEntryScriptPath(entryName) {
+	for (const fileExtension of ['ts', 'js']) {
+		const scriptPath = resolve(srcDir, `${entryName}.${fileExtension}`);
+
+		if (fs.existsSync(scriptPath)) {
+			return scriptPath;
+		}
 	}
 
 	return null;
@@ -207,7 +218,7 @@ function getMode() {
  * @return {Object} Entry object
  */
 function getHtmlEntry(entryName, templateName = null) {
-	const entryPath = getEntryJsPath(entryName);
+	const entryPath = getEntryScriptPath(entryName);
 	return { entryName, entryPath, templateName: templateName || entryName };
 }
 
