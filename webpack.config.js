@@ -4,6 +4,7 @@ const path = require('path');
 const { preprocess } = require('preprocess');
 const { minify } = require('terser');
 
+const { BannerPlugin } = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -353,7 +354,7 @@ function createOptimization() {
 							/[\\/]node_modules[\\/](.*?)([\\/]|$)/
 						)[1];
 
-						return `npm.${packageName.replace('@', '')}`;
+						return `${packageName.replace('@', '')}`;
 					},
 				},
 			},
@@ -436,6 +437,9 @@ function createPlugins(browser) {
 		...createHtmlPluginsFromEntries(getUiPopupsEntries()),
 		new ImageminPlugin({
 			disable: getMode() !== modeProduction,
+		}),
+		new BannerPlugin({
+			banner: 'name: [name]',
 		}),
 	];
 }
